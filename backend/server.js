@@ -50,7 +50,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging middleware
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'production') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
@@ -81,7 +81,7 @@ app.get('/health', async (req, res) => {
       success: true,
       message: 'VU Datesheet Notifier is running',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env.NODE_ENV || 'production',
       uptime: uptime,
       system: {
         memory: {
@@ -166,7 +166,7 @@ app.use((error, req, res, next) => {
     message: process.env.NODE_ENV === 'production' 
       ? 'Internal server error' 
       : error.message,
-    ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    ...(process.env.NODE_ENV === 'production' && { stack: error.stack })
   });
 });
 
@@ -187,7 +187,7 @@ async function startServer() {
     // Start the server
     const server = app.listen(PORT, () => {
       console.log(`[${new Date().toISOString()}] 🚀 Server running on port ${PORT}`);
-      console.log(`[${new Date().toISOString()}] Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`[${new Date().toISOString()}] Environment: ${process.env.NODE_ENV || 'production'}`);
       console.log(`[${new Date().toISOString()}] Health check: http://localhost:${PORT}/health`);
       console.log(`[${new Date().toISOString()}] API Base: http://localhost:${PORT}/api`);
     });

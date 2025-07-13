@@ -60,14 +60,69 @@ if (process.env.NODE_ENV === 'development') {
 app.use(generalLimiter);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'VU Datesheet Notifier is running',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+app.get('/health', async (req, res) => {
+  try {
+    const { checkVUWebsiteHealth } = require('./utils/datesheetChecker');
+    const mongoose = require('mongoose');
+    
+    // Check database connection
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    // Check VU website accessibility
+    const vuWebsiteHealth = await checkVUWebsiteHealth();
+    
+    // Get memory usage
+    const memUsage = process.memoryUsage();
+    
+    // Get system uptime
+    const uptime = process.uptime();
+    
+    res.json({
+      success: true,
+      message: 'VU Datesheet Notifier is running',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      uptime: uptime,
+      system: {
+        memory: {
+          rss: Math.round(memUsage.rss / 1024 / 1024) + ' MB',
+          heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + ' MB',
+          heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024) + ' MB'
+        },
+        nodeVersion: process.version,
+        platform: process.platform
+      },
+      services: {
+        database: {
+          status: dbStatus,
+          host: mongoose.connection.host || 'unknown'
+        },
+        vuWebsite: {
+          accessible: vuWebsiteHealth.accessible,
+          statusCode: vuWebsiteHealth.statusCode,
+          responseTime: vuWebsiteHealth.responseTime,
+          lastCheck: vuWebsiteHealth.timestamp
+        },
+        email: {
+          smtpHost: process.env.SMTP_HOST || 'not configured',
+          smtpPort: process.env.SMTP_PORT || 'not configured',
+          fromEmail: process.env.SMTP_FROM_EMAIL || 'not configured'
+        }
+      },
+      monitoring: {
+        checkInterval: process.env.CHECK_INTERVAL || 60000,
+        datesheetUrl: process.env.DATESHEET_URL || 'https://datesheet.vu.edu.pk/'
+      }
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Health check failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // API routes with specific rate limiting

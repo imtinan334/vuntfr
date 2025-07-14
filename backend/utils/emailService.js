@@ -6,12 +6,12 @@ dotenv.config();
 console.log('SMTP_USER:', process.env.SMTP_USER);
 console.log('SMTP_PASS:', process.env.SMTP_PASS);
 
-// Create transporter for Resend SMTP
+// Create transporter for SMTP (Brevo/Resend)
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.resend.com',
-    port: parseInt(process.env.SMTP_PORT) || 465,
-    secure: true, // true for port 465 (TLS)
+    port: parseInt(process.env.SMTP_PORT) || 587,
+    secure: false, // false for port 587 (STARTTLS), true for port 465 (SSL)
     auth: {
       user: process.env.SMTP_USER || 'resend',
       pass: process.env.SMTP_PASS

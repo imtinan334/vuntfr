@@ -122,8 +122,9 @@ class NotificationManager {
         return;
       }
 
-      // Check datesheet status
-      const isLaunched = await checkDatesheetStatus();
+      // Since datesheet has been released and all subscribers notified, 
+      // force launched status to true and skip actual website checking
+      const isLaunched = true;
       
       if (isLaunched) {
         console.log(`[${new Date().toISOString()}] 🎉 Datesheet is launched! Sending notifications...`);

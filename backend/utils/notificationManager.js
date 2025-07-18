@@ -20,8 +20,13 @@ class NotificationManager {
       // Load notification sent flag
       await this.loadNotificationFlag();
       
+      // Force notification sent to true since the datesheet has been released and all subscribers notified
+      this.notificationSent = true;
+      await this.saveNotificationFlag();
+      
       console.log(`[${new Date().toISOString()}] 📋 Notification Manager initialized`);
       console.log(`[${new Date().toISOString()}] Notification already sent: ${this.notificationSent}`);
+      console.log(`[${new Date().toISOString()}] 🎉 Datesheet has been released and all subscribers notified - monitoring disabled`);
       
       return true;
     } catch (error) {

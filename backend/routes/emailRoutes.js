@@ -212,8 +212,17 @@ router.post('/notify-all', async (req, res) => {
 router.get('/status', async (req, res) => {
   try {
     const monitoringStatus = notificationManager.getStatus();
-    const datesheetInfo = await getDatesheetInfo();
-    const datesheetStatus = await checkDatesheetStatus();
+    
+    // Since datesheet has been released and all subscribers notified, 
+    // return hardcoded values to avoid checking the down VU website
+    const datesheetInfo = {
+      title: "VU Datesheet - Spring 2025 Examinations",
+      statusCode: 200,
+      url: "https://datesheet.vu.edu.pk/",
+      timestamp: new Date().toISOString(),
+      note: "Datesheet has been released - all subscribers notified"
+    };
+    const datesheetStatus = true; // Force to true since datesheet is released
     
     const stats = await Email.aggregate([
       {
